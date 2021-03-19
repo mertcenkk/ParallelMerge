@@ -1,7 +1,7 @@
 import concurrent.futures
 import math
 import multiprocessing
-from multiprocessing import Process, Queue
+from multiprocessing import Pool
 import time
 
 
@@ -32,6 +32,7 @@ def merge(L,R,arr):
 
 
 def mergeSort(arr):
+
     if len(arr) > 1:
 
         # dizinin ortasını bulur
@@ -48,7 +49,7 @@ def mergeSort(arr):
 
         # ikinci yarıyı sırala
         mergeSort(R)
-        merge(L,R,arr)
+        return merge(L,R,arr)
 
     else:
         return arr
@@ -68,22 +69,32 @@ def parallelMergeSort(arr):
     mid = len(arr)//2
     left = arr[:mid]
     right = arr[mid:]
-    # p1 = Process(mergeSort, (left))
-    # p1.start()
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        f1 = executor.submit(mergeSort, (left, ))
-        f2 = executor.submit(mergeSort, (right, ))
-        result_left = f1.result()
+    full = [left, right]
+    pool = multiprocessing.Pool(processes=2)
+    result = pool.map(mergeSort, full)
+    print(result)
 
-
+    pool.close()
+    pool.join()
+    return merge(result[0],result[1],arr)
+    # with concurrent.futures.ProcessPoolExecutor() as executor:
+    #     f1 = executor.submit(mergeSort, (left, ))
+    #     f2 = executor.submit(mergeSort, (right, ))
+    #     f1.done()
+    #     f2.done()
+    #     result_left = f1.result()
+    #     result_right = f2.result()
+    #     print(result_left)
+    #     print(result_right)
 if __name__ == '__main__':
     startTime = time.time()
     arr = [12, 22, 14, 15, 123, 34, 45, 56, 544, 23, 34, 11, 19, 87, 33]
     print(arr)
     print("Given array is", end="\n")
     printList(arr)
+    sorted = parallelMergeSort(arr)
     print("Sorted array is: ", end="\n")
-    parallelMergeSort(arr)
+    print(sorted)
     print("--- %s seconds ---" % (time.time() - startTime))
 
 
