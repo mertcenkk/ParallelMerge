@@ -55,47 +55,24 @@ def mergeSort(arr):
         return arr
 
 
-# listeyi print et
-def printList(arr):
-    for i in range(len(arr)):
-        print(arr[i], end=" ")
-    print()
+def parallelMergeSort(arr,cpu_count=multiprocessing.cpu_count()): #cpu count özel olarak girilmediği sürece default olarak sistemden işlemci sayısını alır.
+    if cpu_count>1 : #işlemci sayısı 1'e ininceye kadar çalıştır
+        cpu_count=cpu_count//2  #işlemci sayısını yarıya indir. (Her pool'a 2 işlemci gidiyor) Kaç defa daha girebileceğini belirler
+        # örneğin işlemci sayısı 16 ise 2 üzeri 4ten 4 defa girebilir 4 birimlik derinliğe ulaşırken 16 process çalıştırır.
+        mid = len(arr)//2
+        left = arr[:mid]
+        right = arr[mid:]
+        full = [left, right] # pool iterable değer beklediği için sol ve sağ listeyi ayrı bir liste ekliyoruz.
+        parallelMergeSort(left,cpu_count)
+        parallelMergeSort(right,cpu_count)
+        pool = multiprocessing.Pool(processes=2)
+        result = pool.map(mergeSort, full)  #iterable bekliyor
+
+        pool.close()
+        pool.join()
+        return merge(result[0],result[1],arr) #birleştirmeye gönderilmek üzere result listesinden left ve right listeleri seçilir.
 
 
-
-def parallelMergeSort(arr):
-    # processes = multiprocessing.cpu_count()
-    # pool = multiprocessing.Pool(processes=2)
-    mid = len(arr)//2
-    left = arr[:mid]
-    right = arr[mid:]
-    full = [left, right]
-    pool = multiprocessing.Pool(processes=2)
-    result = pool.map(mergeSort, full)
-    print(result)
-
-    pool.close()
-    pool.join()
-    return merge(result[0],result[1],arr)
-    # with concurrent.futures.ProcessPoolExecutor() as executor:
-    #     f1 = executor.submit(mergeSort, (left, ))
-    #     f2 = executor.submit(mergeSort, (right, ))
-    #     f1.done()
-    #     f2.done()
-    #     result_left = f1.result()
-    #     result_right = f2.result()
-    #     print(result_left)
-    #     print(result_right)
-if __name__ == '__main__':
-    startTime = time.time()
-    arr = [12, 22, 14, 15, 123, 34, 45, 56, 544, 23, 34, 11, 19, 87, 33]
-    print(arr)
-    print("Given array is", end="\n")
-    printList(arr)
-    sorted = parallelMergeSort(arr)
-    print("Sorted array is: ", end="\n")
-    print(sorted)
-    print("--- %s seconds ---" % (time.time() - startTime))
 
 
 
