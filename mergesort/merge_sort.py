@@ -1,11 +1,13 @@
 import concurrent.futures
 import math
 import multiprocessing
-from multiprocessing import Pool
+from concurrent import futures
 import time
 
 
-def merge(L,R,arr):
+
+def merge(L,R):
+    arr = arrFiller(L,R)
     i = j = k = 0
 
     # veriyi l ve r adında geçici listelere kopyala
@@ -49,31 +51,43 @@ def mergeSort(arr):
 
         # ikinci yarıyı sırala
         mergeSort(R)
-        return merge(L,R,arr)
+        return merge(L,R)
 
     else:
         return arr
 
 
 def parallelMergeSort(arr,cpu_count=multiprocessing.cpu_count()): #cpu count özel olarak girilmediği sürece default olarak sistemden işlemci sayısını alır.
-    if cpu_count>1 : #işlemci sayısı 1'e ininceye kadar çalıştır
-        cpu_count=cpu_count//2  #işlemci sayısını yarıya indir. (Her pool'a 2 işlemci gidiyor) Kaç defa daha girebileceğini belirler
-        # örneğin işlemci sayısı 16 ise 2 üzeri 4ten 4 defa girebilir 4 birimlik derinliğe ulaşırken 16 process çalıştırır.
-        mid = len(arr)//2
+
+#işlemci sayısı 1'e ininceye kadar çalıştır
+#işlemci sayısını yarıya indir. (Her pool'a 2 işlemci gidiyor) Kaç defa daha girebileceğini belirler
+# örneğin işlemci sayısı 16 ise 2 üzeri 4ten 4 defa girebilir 4 birimlik derinliğe ulaşırken 16 process çalıştırır.
+# pool iterable değer beklediği için sol ve sağ listeyi ayrı bir liste ekliyoruz.
+        mid = len(arr) // 2
         left = arr[:mid]
         right = arr[mid:]
-        full = [left, right] # pool iterable değer beklediği için sol ve sağ listeyi ayrı bir liste ekliyoruz.
-        parallelMergeSort(left,cpu_count)
-        parallelMergeSort(right,cpu_count)
-        pool = multiprocessing.Pool(processes=2)
-        result = pool.map(mergeSort, full)  #iterable bekliyor
+        full = [left, right]
+        if cpu_count == 1:
+            l = mergeSort(left)
+            r = mergeSort(right)
+            return merge(l,r)
 
-        pool.close()
-        pool.join()
-        return merge(result[0],result[1],arr) #birleştirmeye gönderilmek üzere result listesinden left ve right listeleri seçilir.
+        else:
+            result = []
+            with futures.ProcessPoolExecutor(cpu_count) as p:
+                cpu_count = cpu_count // 2
+                if cpu_count > 0:
 
+                    cpu_countlist = [cpu_count,cpu_count]
+                    future = p.map(parallelMergeSort,full,cpu_countlist)
+                    for value in future:
+                        result.append(value)
+            return merge(result[0],result[1])
 
-
-
+def arrFiller(l,r):
+    arr=[]
+    for i in range(0,len(l)+len(r)):
+        arr.append(0)
+    return arr
 
 
