@@ -1,13 +1,10 @@
-import concurrent.futures
-import math
 import multiprocessing
 from concurrent import futures
-import time
 
 
 
-def merge(L,R):
-    arr = arrFiller(L,R)
+def merge(L,R,arr):
+    #arr = arrFiller(L,R)
     i = j = k = 0
 
     # veriyi l ve r adında geçici listelere kopyala
@@ -51,7 +48,7 @@ def mergeSort(arr):
 
         # ikinci yarıyı sırala
         mergeSort(R)
-        return merge(L,R)
+        return merge(L,R,arr)
 
     else:
         return arr
@@ -70,7 +67,7 @@ def parallelMergeSort(arr,cpu_count=multiprocessing.cpu_count()): #cpu count öz
         if cpu_count == 1:
             l = mergeSort(left)
             r = mergeSort(right)
-            return merge(l,r)
+            return merge(l,r,arr)
 
         else:
             result = []
@@ -82,12 +79,13 @@ def parallelMergeSort(arr,cpu_count=multiprocessing.cpu_count()): #cpu count öz
                     future = p.map(parallelMergeSort,full,cpu_countlist)
                     for value in future:
                         result.append(value)
-            return merge(result[0],result[1])
 
-def arrFiller(l,r):
-    arr=[]
-    for i in range(0,len(l)+len(r)):
-        arr.append(0)
-    return arr
+            return merge(result[0],result[1],arr)
 
 
+
+def convertToArray(value):
+    result = []
+    for i in range(0, len(value)):
+        result.append(value[i])
+    return result

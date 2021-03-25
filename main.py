@@ -1,5 +1,5 @@
 import time
-from mergesort.merge_sort import parallelMergeSort,mergeSort
+from mergesort.merge_sort import parallelMergeSort,mergeSort,convertToArray
 import random
 
 def main():
@@ -11,21 +11,26 @@ def main():
 
     randforNonParallel = randomlist
 
+    # inp = input("giriş")
+    # arrinp = convertToArray(inp)
+    # print(arrinp)
+    arr = [12, 22, 14, 15, 123, 34, 45, 56, 544, 23, 34, 11, 19, 87, 33]
 
     startTime = time.time()
     print("Given array is processing in serial", end="\n")
     print("wait")
-    sorted = mergeSort(randforNonParallel)
+    sorted = mergeSort(randomlist)
+    #print(sorted)
     print("Array is sorted", end="\n")
     print("--- %s seconds ---" % (time.time() - startTime))
 
     print("-----------------------------------\n")
-
     startTime = time.time()
-    arr = [12, 22, 14, 15, 123, 34, 45, 56, 544, 23, 34, 11, 19, 87, 33]
+
     print("Given array is processing in parallel")
     print("wait")
-    sorted = parallelMergeSort(randomlist)
+    sorted = parallelMergeSort(randforNonParallel)
+    #print(arrinp)
     print("Array is sorted", end="\n")
     print("--- %s seconds ---" % (time.time() - startTime))
 
